@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.9.6",
+    "@adonisjs/lucid": "^18.4.2",
     "@japa/preset-adonis": "^1.2.0",
     "@japa/runner": "^2.5.1",
     "@types/proxy-addr": "^2.0.2",
@@ -23,8 +24,13 @@
   "dependencies": {
     "@adonisjs/core": "^5.9.0",
     "@adonisjs/repl": "^3.1.11",
+    "adonis": "^0.9.0",
+    "luxon": "^3.4.3",
+    "mysql2": "^3.6.2",
     "proxy-addr": "^2.0.7",
     "reflect-metadata": "^0.1.13",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "uuid": "^9.0.1",
+    "uuidv4": "^6.2.13"
   }
 }
