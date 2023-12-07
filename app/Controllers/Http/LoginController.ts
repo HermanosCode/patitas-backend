@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User';
+import bcryptjs from 'bcryptjs';
 
 
 export default class LoginController {
@@ -20,7 +21,9 @@ export default class LoginController {
       else {
 
         //Verifica que la contraseña sea correcta
-        if (user_password === user.user_password) {
+        const passwordHash = await bcryptjs.compare(user_password,user.user_password) 
+
+        if (passwordHash) {
           response.status(200).send('')
         } else {
           response.status(400).send('La contraseña ingresada es incorrecta ')
