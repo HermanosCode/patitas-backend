@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User';
 import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 
 export default class LoginController {
@@ -25,6 +26,16 @@ export default class LoginController {
 
         if (passwordHash) {
           response.status(200).send('')
+
+          // Generar token JWT
+          const user = {user_email : user_email }
+          const accessToken = jwt.sign(user,process.env.JWT_TOKEN,{expiresIn : '5m'} );
+
+          response.send({
+            message : "Usuario autentificado",
+            user_email : user.user_email, 
+            token : accessToken
+          })
         } else {
           response.status(400).send('La contraseña ingresada es incorrecta ')
         }
