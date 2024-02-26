@@ -4,54 +4,56 @@ import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 
+
 export default class LoginController {
 
+
+    
   public async verifyUser({ response, request }: HttpContextContract) {
 
     try {
-
+      //Obtiene los datos deseados 
       const { user_email, user_password } = request.only(['user_email', 'user_password']);
 
-      //Verifica que el email exista en la base de datos 
+      //busca el email en la base de datos 
       const user = await User.findBy('user_email', user_email)
 
-      if (!user) {
-        response.status(400).send('No se ha encontrado el email')
+      //Verifica que el email exista y compara las contraseñas
+      const passwordCorrect = user === null ? false : await bcryptjs.compare(user_password,user.user_password)
+      
+      if (!(user && passwordCorrect)) {
+        response.status(400).json({
+          message : 'Email o contraseña incorrecta'})
 
       }
       else {
-
-        //Verifica que la contraseña sea correcta
-        const passwordHash = await bcryptjs.compare(user_password,user.user_password) 
-
-        if (passwordHash) {
-          response.status(200).send('')
-
-          // Generar token JWT
-          const user = {user_email : user_email }
-          const accessToken = jwt.sign(user,process.env.JWT_TOKEN,{expiresIn : '5m'} );
-
-          response.send({
-            message : "Usuario autentificado",
-            user_email : user.user_email, 
-            token : accessToken
-          })
-        } else {
-          response.status(400).send('La contraseña ingresada es incorrecta ')
+        
+          
+      // Generar el token JWT
+      const token = jwt.sign( {user_id: user.user_id }, process.env.JWT_TOKEN);
+      console.log(token)
+      // Establecer el token JWT en una cookie en la respuesta HTTP
+       response.cookie('jwt_token', token,{httpOnly : true});
+      
+      // Enviar la respuesta
+      response.status(200).json({ 
+        message: 'Inicio de sesión exitoso' });
+        //console.log(await request.cookie('patsinhog'))
         }
       }
-    }
+      
     catch (e) {
-      console.log(e);
-      response.status(500).send('Error interno del servidor')
+      console.log(e)
+      response.status(500).json({
+       message : 'Error interno del servidor'})
     }
+   
   }
 
 
   public async createUser({ request, response }: HttpContextContract) {
 
     try {
-
       //Obtener datos de la solicitud
       const userData = request.all();
 
@@ -59,19 +61,21 @@ export default class LoginController {
       const email = await User.findBy('user_email', userData.user_email);
 
       if (email) {
-        response.status(400).send('El email ya se encuentra registrado')
+        response.status(400).json({
+          message : 'El email ingresado ya se encuentra registrado'})
       }else{
         // Crea un nuevo usuario en la base de datos 
       await User.create(userData)
       //Responder con exito con msg
-      response.status(200).send('El usuario ha sido creado');
+      response.status(200).json({
+        message : 'El usuario ha sido creado'});
       }
 
     }
     catch (e) {
       //Manejar error con msg
-      console.log(e);
-      response.status(500).send('Error interno del servidor')
+      response.status(500).json({
+      message : 'Error interno del servidor'})
     }
   }
 
@@ -79,20 +83,29 @@ export default class LoginController {
   public async deleteUser({params,response}: HttpContextContract) {
     
     try{
+      //Busca al usuario indicado
       const userId= await User.find(params.user_id)
 
 
       if(userId){
         await userId.delete()
-        response.status(200).send('El usuario ha sido borrado correctamente')
+        response.status(200).json({
+          message : 'El usuario ha sido borrado correctamente'})
       }else{
-        response.status(400).send('El usuario no se ha encontrado')
+        response.status(400).json({
+          message :'El usuario no se ha encontrado'})
       }
     }
     catch(e){
       console.log(e);
-      response.status(500).send('Error interno del servidor')
+      response.status(500).json({
+        message : 'Error interno del servidor'})
     }
   }
 
+
+ 
+  
 }
+
+

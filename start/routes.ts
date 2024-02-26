@@ -21,6 +21,8 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import Route from '@ioc:Adonis/Core/Route'
 
 
+
+
 Route.get('/users', async () => {
   return Database.from('users').select('*')
 })
@@ -45,4 +47,9 @@ Route.group(() => {
 
 
 
+Route.post('/publicar','PetController.postPet')
 
+Route.delete('/logout', async ({ response }) => {
+  response.clearCookie('jwt_token');
+  return response.status(200).json({ message: 'Sesión cerrada exitosamente' });
+});
