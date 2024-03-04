@@ -32,7 +32,4 @@ export default class User extends BaseModel {
     user.user_password =  await bcryptjs.hash(user.user_password,8)
     
   }
-
- 
-  
 }
