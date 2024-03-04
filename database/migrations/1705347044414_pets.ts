@@ -15,7 +15,7 @@ export default class extends BaseSchema {
       table.string('pet_type',255).notNullable()
       table.boolean('pet_disability').notNullable()
       table.boolean('veterinary_care').notNullable()
-      table.string('pet_description',255).notNullable()
+      table.string('pet_description',1000).notNullable()
       table.string('pet_location',255).notNullable()
       table.string('contact_number',255).notNullable()
       

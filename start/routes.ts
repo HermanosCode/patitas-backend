@@ -50,6 +50,6 @@ Route.group(() => {
 Route.post('/publicar','PetController.postPet')
 
 Route.delete('/logout', async ({ response }) => {
-  response.clearCookie('jwt_token');
+  response.clearCookie('pat-sin-hog');
   return response.status(200).json({ message: 'Sesión cerrada exitosamente' });
 });

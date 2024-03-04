@@ -44,7 +44,6 @@ export default class PetController {
 
            await Pet.create({
               ...petData,
-              pet_location : "arg",
               user_id: user_id,
               pet_photo : petPhotoPath,
               })
