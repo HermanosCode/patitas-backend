@@ -19,7 +19,7 @@ const databaseConfig: DatabaseConfig = {
   | file.
   |
   */
-  connection: Env.get('DB_CONNECTION'),
+  connection: Env.get('DB_CONNECTION','mysql2'),
 
   connections: {
     /*
@@ -33,7 +33,7 @@ const databaseConfig: DatabaseConfig = {
     | npm i mysql2
     |
     */
-    mysql: {
+    mysql2: {
       client: 'mysql2',
       connection: {
         host: Env.get('MYSQL_HOST'),

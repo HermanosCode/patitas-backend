@@ -1,0 +1,11 @@
+
+# patitas sin hogar backend
+
+# To start the server
+node ace serve 
+
+#To run migrations
+
+node ace migration:run
+
+

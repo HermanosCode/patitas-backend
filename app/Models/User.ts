@@ -11,13 +11,13 @@ export default class User extends BaseModel {
   public user_id: string
 
   @column({})
-  public user_name :string
-  
-  @column()
-  public user_password : string
+  public user_name: string
 
   @column()
-  public user_email :string
+  public user_password: string
+
+  @column()
+  public user_email: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -29,7 +29,11 @@ export default class User extends BaseModel {
   public static async assignUuid(user: User) {
     user.user_id = uuid()
 
-    user.user_password =  await bcryptjs.hash(user.user_password,8)
-    
+  }
+
+  @beforeCreate()
+  public static async hashPassword(user: User) {
+    user.user_password = await bcryptjs.hash(user.user_password, 8)
+
   }
 }
