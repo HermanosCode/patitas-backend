@@ -5,57 +5,49 @@ import jwt from 'jsonwebtoken';
 
 
 export default class PetController {
+
+
   public async createPet({ request, response }: HttpContextContract) {
     try {
-
-
       // Obtener el token JWT de la cookie en la solicitud
-      const token = request.cookie('pat-sin-hog'); //REVIEW
+      const token = request.cookie('pat-sin-hog');
+      let user_id = '';
 
-
-      // Verificar si el token JWT es válido
       if (!token) {
-        return response.status(401).json({ message: 'Token de autenticación no proporcionado' });
+        return response.status(401).json({ message: 'Token JWT inválido' });
       }
 
-      // Verificar y decodificar el token JWT
-      const decodedToken = jwt.verify(token, process.env.JWT_TOKEN) as { user_id: string };
-      const user_id = decodedToken.user_id;
+      try {
+        console.log(token);
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN);
+        console.log(decoded);
 
-
+        user_id = decoded.user_id;
+      } catch (error) {
+        return response.status(403).json({ message: 'Error al verificar el token:' });
+      }
 
       // Obtener los datos de la solicitud
-      const petData = request.all()
-
+      const petData = request.all();
       const petPhoto = request.file('pet_photo');
+      const petPhotoPath = petPhoto?.tmpPath;
 
+      const existingPet = await Pet.query().where('pet_name', petData.pet_name).where('user_id', user_id).first();
 
-      const mascota = await Pet.findBy('pet_id', petData.pet_id) //Buscar por el ID de la mascota 
-
-
-      if (mascota) {
-        response.status(400).json({
-          message: 'La mascota ya existe '
-        })
-      } else {
-        const petPhotoPath = petPhoto?.tmpPath;
-
-        await Pet.create({
-          ...petData,
-          user_id: user_id,
-          pet_photo: petPhotoPath,
-        })
-
-        response.status(200).json({
-          message: 'La mascota fue publicada'
-        });
+      if (existingPet) {
+        return response.status(400).json({ message: 'La mascota ya existe' });
       }
 
-    } catch (e) {
-      response.status(500).json({
-        message: 'Hubo un error al guardar la mascota',
-
+      await Pet.create({
+        ...petData,
+        user_id: user_id,
+        pet_photo: petPhotoPath,
       });
+
+      return response.status(200).json({ message: 'La mascota fue publicada' });
+    } catch (error) {
+      return response.status(500).json({ message: 'Hubo un error al guardar la mascota' });
     }
   }
+
 }

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, column } from '@ioc:Adonis/Lucid/Orm'
-import { uuid } from 'uuidv4'
+import { v4 as uuid } from 'uuid';
 import bcryptjs from 'bcryptjs';
 
 

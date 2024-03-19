@@ -1,6 +1,6 @@
 import { BaseModel, beforeCreate, column } from "@ioc:Adonis/Lucid/Orm";
-import { uuid } from 'uuidv4'
-import { DateTime } from 'luxon'
+import { DateTime } from 'luxon';
+import { v4 as uuid } from 'uuid';
 
 export default class Pet extends BaseModel {
 
