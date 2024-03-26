@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 export default class LoginController {
 
 
-    
+
   public async verifyUser({ response, request }: HttpContextContract) {
 
     try {
@@ -19,35 +19,38 @@ export default class LoginController {
       const user = await User.findBy('user_email', user_email)
 
       //Verifica que el email exista y compara las contraseñas
-      const passwordCorrect = user === null ? false : await bcryptjs.compare(user_password,user.user_password)
-      
+      const passwordCorrect = user === null ? false : await bcryptjs.compare(user_password, user.user_password)
+
       if (!(user && passwordCorrect)) {
         response.status(400).json({
-          message : 'Email o contraseña incorrecta'})
+          message: 'Email o contraseña incorrecta'
+        })
 
       }
       else {
-        
-          
-      // Generar el token JWT
-      const token = jwt.sign( {user_id: user.user_id }, process.env.JWT_TOKEN);
-      console.log(token)
-      // Establecer el token JWT en una cookie en la respuesta HTTP
-       response.cookie('jwt_token', token,{httpOnly : true});
-      
-      // Enviar la respuesta
-      response.status(200).json({ 
-        message: 'Inicio de sesión exitoso' });
+
+
+        // Generar el token JWT
+        const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_TOKEN);
+        console.log(token)
+        // Establecer el token JWT en una cookie en la respuesta HTTP
+        response.cookie('jwt_token', token, { httpOnly: true });
+
+        // Enviar la respuesta
+        response.status(200).json({
+          message: 'Inicio de sesión exitoso'
+        });
         //console.log(await request.cookie('patsinhog'))
-        }
       }
-      
+    }
+
     catch (e) {
       console.log(e)
       response.status(500).json({
-       message : 'Error interno del servidor'})
+        message: 'Error interno del servidor'
+      })
     }
-   
+
   }
 
 
@@ -62,50 +65,56 @@ export default class LoginController {
 
       if (email) {
         response.status(400).json({
-          message : 'El email ingresado ya se encuentra registrado'})
-      }else{
+          message: 'El email ingresado ya se encuentra registrado'
+        })
+      } else {
         // Crea un nuevo usuario en la base de datos 
-      await User.create(userData)
-      //Responder con exito con msg
-      response.status(200).json({
-        message : 'El usuario ha sido creado'});
+        await User.create(userData)
+        //Responder con exito con msg
+        response.status(200).json({
+          message: 'El usuario ha sido creado'
+        });
       }
 
     }
     catch (e) {
       //Manejar error con msg
       response.status(500).json({
-      message : 'Error interno del servidor'})
+        message: 'Error interno del servidor'
+      })
     }
   }
 
 
-  public async deleteUser({params,response}: HttpContextContract) {
-    
-    try{
+  public async deleteUser({ params, response }: HttpContextContract) {
+
+    try {
       //Busca al usuario indicado
-      const userId= await User.find(params.user_id)
+      const userId = await User.find(params.user_id)
 
 
-      if(userId){
+      if (userId) {
         await userId.delete()
         response.status(200).json({
-          message : 'El usuario ha sido borrado correctamente'})
-      }else{
+          message: 'El usuario ha sido borrado correctamente'
+        })
+      } else {
         response.status(400).json({
-          message :'El usuario no se ha encontrado'})
+          message: 'El usuario no se ha encontrado'
+        })
       }
     }
-    catch(e){
+    catch (e) {
       console.log(e);
       response.status(500).json({
-        message : 'Error interno del servidor'})
+        message: 'Error interno del servidor'
+      })
     }
   }
 
 
- 
-  
+
+
 }
 
 

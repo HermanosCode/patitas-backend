@@ -28,7 +28,7 @@ Route.get('/users', async () => {
 })
 
 
-
+Route.get('/getPets', "PetController.getPets")
 
 Route.group(() => {
   // Ruta para iniciar sesion,verificando  si el email existe y la contraseña es correcta

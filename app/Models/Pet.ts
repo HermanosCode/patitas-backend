@@ -12,8 +12,6 @@ export default class Pet extends BaseModel {
     @column({isPrimary : true})
     public user_id : string
 
-    @column({ })
-    public pet_location : string
 
     @column({})
     public contact_number : string
@@ -45,6 +43,12 @@ export default class Pet extends BaseModel {
 
     @column({})
     public pet_description : string 
+
+    @column({})
+    public pet_province : string
+
+    @column({})
+    public pet_location :string
 
     @column.dateTime({ autoCreate: true })
     public createdAt: DateTime
