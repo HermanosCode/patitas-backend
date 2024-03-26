@@ -1,7 +1,7 @@
 import Pet from 'App/Models/Pet';
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import {v2 as cloudinary} from 'cloudinary';
-
+import jwt from "jsonwebtoken"
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME,
@@ -10,50 +10,48 @@ cloudinary.config({
 });
 
 export default class PetController {
-  public async postPet({ request, response }: HttpContextContract) {
-    
+
+
+  public async createPet({ request, response }: HttpContextContract) {
     try {
+      // Obtener el token JWT de la cookie en la solicitud
+      const token = request.cookie('pat-sin-hog');
+      let user_id = '';
+
+      if (!token) {
+        return response.status(401).json({ message: 'Token JWT inválido' });
+      }
+
+      try {
+        console.log(token);
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN);
+        console.log(decoded);
+
+        user_id = decoded.user_id;
+      } catch (error) {
+        return response.status(403).json({ message: 'Error al verificar el token:' });
+      }
+
       // Obtener los datos de la solicitud
       const petData = request.all();
       const petPhoto = request.file('pet_photo');
-      const nombreMascota = await Pet.findBy('pet_name', petData.pet_name);
+      const petPhotoPath = petPhoto?.tmpPath;
 
-      if (nombreMascota) {
-        return response.status(400).json({
-          message: 'La mascota ya existe ',
-        });
-      } else {
-        if (!petPhoto) {
-          return response.status(400).json({
-            message: 'No se proporcionó ninguna imagen',
-          });
-        }
-        
-        const uploadedPhoto = await cloudinary.uploader.upload(petPhoto.tmpPath!, {
-          upload_preset: 'patSinHog'
-         
-        });
-        
+      const existingPet = await Pet.query().where('pet_name', petData.pet_name).where('user_id', user_id).first();
 
-        const imageUrl = uploadedPhoto.secure_url;
-
-        // Guarda la URL de la imagen en la base de datos
-        await Pet.create({
-          ...petData,
-          user_id: 'tomas',
-          pet_photo: imageUrl,
-        });
-
-        return response.status(200).json({
-          message: 'La mascota fue publicada',
-          imageUrl: imageUrl, 
-        });
+      if (existingPet) {
+        return response.status(400).json({ message: 'La mascota ya existe' });
       }
-    } catch (e) {
-      console.log(e);
-      return response.status(500).json({
-        message: 'Hubo un error al guardar la mascota',
+
+      await Pet.create({
+        ...petData,
+        user_id: user_id,
+        pet_photo: petPhotoPath,
       });
+
+      return response.status(200).json({ message: 'La mascota fue publicada' });
+    } catch (error) {
+      return response.status(500).json({ message: 'Hubo un error al guardar la mascota' });
     }
   }
 

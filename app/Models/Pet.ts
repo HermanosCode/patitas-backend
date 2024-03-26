@@ -1,25 +1,26 @@
 import { BaseModel, beforeCreate, column } from "@ioc:Adonis/Lucid/Orm";
-import { v4 } from "uuid";
-import { DateTime } from 'luxon'
+import { DateTime } from 'luxon';
+import { v4 as uuid } from 'uuid';
 
 export default class Pet extends BaseModel {
-  
 
-    @column({ isPrimary :true })
-    public pet_id : string
+
+    @column({ isPrimary: true })
+    public pet_id: string
 
 
     @column({isPrimary : true})
     public user_id : string
 
+    @column({})
+    public pet_location: string
 
     @column({})
-    public contact_number : string
-
+    public contact_number: string
 
     @column({})
-    public pet_name : string
-    
+    public pet_name: string
+
     @column()
     public pet_photo : string
   
@@ -47,8 +48,6 @@ export default class Pet extends BaseModel {
     @column({})
     public pet_province : string
 
-    @column({})
-    public pet_location :string
 
     @column.dateTime({ autoCreate: true })
     public createdAt: DateTime
@@ -58,6 +57,6 @@ export default class Pet extends BaseModel {
 
     @beforeCreate()
     public static async assignUuid(pet: Pet) {
-    pet.pet_id = v4()
+        pet.pet_id = uuid()
     }
 }
