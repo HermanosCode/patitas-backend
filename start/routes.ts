@@ -9,7 +9,13 @@
 */
 import Route from '@ioc:Adonis/Core/Route'
 
-//Grupo de rutas para login-register
+
+
+
+
+
+
+Route.get('/getPets', "PetController.getPets")
 
 Route.group(() => {
 

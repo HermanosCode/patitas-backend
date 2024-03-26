@@ -9,8 +9,8 @@ export default class Pet extends BaseModel {
     public pet_id: string
 
 
-    @column({ isPrimary: true })
-    public user_id: string
+    @column({isPrimary : true})
+    public user_id : string
 
     @column({})
     public pet_location: string
@@ -22,28 +22,32 @@ export default class Pet extends BaseModel {
     public pet_name: string
 
     @column()
-    public pet_photo: string
+    public pet_photo : string
+  
+    @column({})
+    public pet_race : string
 
     @column({})
-    public pet_race: string
+    public pet_age : string
 
     @column({})
-    public pet_age: number
+    public pet_gender : string 
 
     @column({})
-    public pet_gender: string
+    public pet_type : string
 
     @column({})
-    public pet_type: string
+    public pet_disability : boolean
 
     @column({})
-    public pet_disability: boolean
+    public veterinary_care : boolean
 
     @column({})
-    public veterinary_care: boolean
+    public pet_description : string 
 
     @column({})
-    public pet_description: string
+    public pet_province : string
+
 
     @column.dateTime({ autoCreate: true })
     public createdAt: DateTime

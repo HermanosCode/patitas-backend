@@ -1,8 +1,13 @@
 import Pet from 'App/Models/Pet';
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import jwt from 'jsonwebtoken';
+import {v2 as cloudinary} from 'cloudinary';
+import jwt from "jsonwebtoken"
 
-
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_NAME_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 
 export default class PetController {
 
@@ -50,4 +55,26 @@ export default class PetController {
     }
   }
 
-}
+
+
+  public async getPets({request,response }: HttpContextContract) {
+    
+      const page = request.input('page', 1)
+      const limit = 2
+      const offset = (page - 1) * limit
+  
+      try {
+         // Consulta para obtener las mascotas paginadas
+        const mascotas = await Pet.query().offset(offset).limit(limit)
+       
+        // Consulta para obtener el total de mascotas
+        const totalMascotas = await Pet.query().count('* as total').first()
+        const numTotal = totalMascotas ? totalMascotas.$extras.total : 0;
+        const totalPaginas = Math.ceil(numTotal / limit);
+        
+        return response.json({mascotas,totalPaginas})
+      } catch (error) {
+        return response.status(500).json({ error: 'Error al obtener mascotas.' })
+      }
+    }
+  }
