@@ -48,6 +48,9 @@ export default class Pet extends BaseModel {
     @column({})
     public pet_province : string
 
+    @column({})
+    public adopted_at : DateTime
+
 
     @column.dateTime({ autoCreate: true })
     public createdAt: DateTime

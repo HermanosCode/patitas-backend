@@ -15,7 +15,7 @@ import Route from '@ioc:Adonis/Core/Route'
 
 
 
-Route.get('/getPets', "PetController.getPets")
+
 
 Route.group(() => {
 
@@ -40,12 +40,27 @@ Route.group(() => {
   //Ruta para eliminar un usuario
   Route.delete('/delete/:user_id', 'UserController.deleteUser')
 
+
 }).prefix('/user')
 
 
 //Grupo de rutas para mascotas
 
 Route.group(() => {
+
+  Route.get('/getPets', "PetController.getPets")
+
+  Route.put("/adoptPet","PetController.adoptPet")
+
+  //Ruta para obtener mascotas del usuario
+  Route.get('/getUserPets','PetController.getUserPets')
+
+  //Ruta para obtener mascotas adoptadas del usuario
+  Route.get("/getAdoptedPets","PetController.getAdoptedPet")
+
+  Route.put("/updatePet","PetController.updatePet")
+
+  Route.delete('/delete',"PetController.deletePet")
 
   // Ruta para crear una mascota
   Route.post('/publish', 'PetController.createPet')
