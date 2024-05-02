@@ -3,6 +3,8 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { v2 as cloudinary } from 'cloudinary';
 import jwt from "jsonwebtoken"
 import { cantidadMascotasAMostrar } from '../../../common/constants';
+import User from 'App/Models/User';
+import Database from '@ioc:Adonis/Lucid/Database';
 
 
 cloudinary.config({
@@ -74,21 +76,78 @@ export default class PetController {
     const page = request.input('page', 1)
     const limit = cantidadMascotasAMostrar
     const offset = (page - 1) * limit
+    const gender = request.input('pet_gender', "")
+    const type = request.input("pet_type", "")
+    const age = request.input("pet_age", "")
+    const province = request.input("province", "")
+    const location = request.input("location", "")
 
-    try {
-      // Consulta para obtener las mascotas paginadas
-      const mascotas = await Pet.query().whereNull("adopted_at").offset(offset).limit(limit)
 
-      // Consulta para obtener el total de mascotas
-      const totalMascotas = await Pet.query().count('* as total').first()
-      const numTotal = totalMascotas ? totalMascotas.$extras.total : 0;
-      const totalPaginas = Math.ceil(numTotal / limit);
 
-      return response.json({ mascotas, totalPaginas })
-    } catch (error) {
-      return response.status(500).json({ error: 'Error al obtener mascotas.' })
+    const isFilter = () => {
+      return gender == "" && type == "" && province == null && age == null && location == null;
     }
+
+    if (isFilter()) {
+      try {
+
+        // Consulta para obtener las mascotas paginadas
+        const mascotas = await Pet.query().whereNull("adopted_at").offset(offset).limit(limit)
+
+        // Consulta para obtener el total de mascotas
+        const totalMascotas = await Pet.query().whereNull("adopted_at").count('* as total').first()
+        const numTotal = totalMascotas ? totalMascotas.$extras.total : 0;
+
+        const totalPaginas = Math.ceil(numTotal / limit);
+
+        return response.json({ mascotas, totalPaginas })
+      } catch (error) {
+        return response.status(500).json({ error: 'Error al obtener mascotas.' })
+      }
+    } else {
+      try {
+
+        let mascotasQuery = Pet.query().whereNull("adopted_at");
+
+
+        if (type !== '') {
+          mascotasQuery = mascotasQuery.where("pet_type", type);
+        }
+
+
+        if (gender !== '') {
+          mascotasQuery = mascotasQuery.where("pet_gender", gender);
+        }
+
+        if (age !== '') {
+          mascotasQuery = mascotasQuery.where("pet_age", age);
+        }
+
+        if (province !== '') {
+          mascotasQuery = mascotasQuery.where("pet_province", province);
+        }
+
+        if (location !== '') {
+          mascotasQuery = mascotasQuery.where("pet_location", location);
+        }
+
+        // Ejecutar la consulta con filtros paginados
+        const mascotas = await mascotasQuery.offset(offset).limit(limit);
+
+        // Consulta para obtener el total de mascotas con filtros aplicados
+        const totalMascotas = await mascotasQuery.count('* as total').first();
+        const numTotal = totalMascotas ? totalMascotas.$extras.total : 0;
+        const totalPaginas = Math.ceil(numTotal / limit);
+
+        return response.json({ mascotas, totalPaginas });
+
+      } catch (error) {
+        return response.status(500).json({ error: 'Error al obtener mascotas con filtros.' });
+      }
+    }
+
   }
+
 
   public async getUserPets({ request, response }: HttpContextContract) {
     try {
@@ -131,7 +190,7 @@ export default class PetController {
   public async deletePet({ request, response }: HttpContextContract) {
     try {
       const data = request.body()
-      
+
       const findPet = await Pet.findBy('pet_id', data.pet_id)
       //obtener la url de la carpeta e imagen cloudinary
       const imageUrl = data.pet_photo
@@ -141,7 +200,22 @@ export default class PetController {
       const image = folder + "/" + imageName
 
       if (findPet) {
+
+
+        const userWithPets = await User.query()
+          .where('favorites_pets', 'LIKE', `%${data.pet_id}%`).from("users")
+
+
+        for (const user of userWithPets) {
+          const favoritesPetsUser = user.favorites_pets.filter(pet_id => pet_id !== data.pet_id);
+
+          await User.query()
+            .where('user_id', user.user_id)
+            .update({ favorites_pets: JSON.stringify(favoritesPetsUser) });
+        }
+
         await Pet.query().where('pet_id', data.pet_id).from('pets').delete()
+
         //borrar la imagen en clkoudinary con sus respectivos errores
         cloudinary.uploader.destroy(image, function (error, result) {
           if (error) {
@@ -205,19 +279,19 @@ export default class PetController {
 
           const uploadedPhoto = await cloudinary.uploader.upload(filePet.tmpPath!, {
             upload_preset: 'patSinHog'
-  
+
           });
-  
+
           const urlFile = uploadedPhoto.secure_url;
           delete petData.url_image
           const dataUpdate = {
             ...petData,
-            pet_photo : urlFile
+            pet_photo: urlFile
           }
-          
+
           await Pet.query().where("pet_id", petData.pet_id).from("pets").update(dataUpdate)
           response.status(200).json({
-            message : "Mascota actualizada exitosamente"
+            message: "Mascota actualizada exitosamente"
           })
         }
       } else {
@@ -234,13 +308,26 @@ export default class PetController {
   }
 
 
-  public async adoptPet ({request,response}: HttpContextContract) {
+  public async adoptPet({ request, response }: HttpContextContract) {
     try {
-      const  data  = request.body();
-      
+      const data = request.body();
+
       await Pet.query().where("pet_id", data.pet_id).from("pets").update({
         adopted_at: new Date()
       });
+
+      const userWithPets = await User.query()
+        .where('favorites_pets', 'LIKE', `%${data.pet_id}%`).from("users")
+
+      for (const user of userWithPets) {
+        const favoritesPetsUser = user.favorites_pets.filter(pet_id => pet_id !== data.pet_id);
+       
+        await User.query()
+          .where('user_id', user.user_id)
+          .update({ favorites_pets: JSON.stringify(favoritesPetsUser) });
+      }
+
+
       response.status(200).json({
         message: "Mascota adoptada"
       });
@@ -251,7 +338,7 @@ export default class PetController {
     }
   }
 
-  public async getAdoptedPet({request,response} : HttpContextContract) {
+  public async getAdoptedPet({ request, response }: HttpContextContract) {
     try {
       const token = request.cookie('pat-sin-hog')
       let userId = ''
