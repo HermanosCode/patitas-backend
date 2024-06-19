@@ -63,7 +63,6 @@ export default class PetController {
       }
       return response.status(200).json({ message: 'La mascota fue publicada' });
     } catch (error) {
-      console.log(error)
       return response.status(500).json({ message: 'Hubo un error al guardar la mascota' });
     }
   }
@@ -141,8 +140,6 @@ export default class PetController {
       const imageName = urlArray[urlArray.length - 1].split('.')[0]
       const image = folder + "/" + imageName
 
-
-
       if (findPet) {
         await Pet.query().where('pet_id', data.pet_id).from('pets').delete()
         //borrar la imagen en clkoudinary con sus respectivos errores
@@ -166,7 +163,6 @@ export default class PetController {
         })
       }
     } catch (e) {
-      console.error(e);
       response.status(500).json({
         message: 'Error al eliminar la mascota'
       });
@@ -231,7 +227,6 @@ export default class PetController {
       }
 
     } catch (e) {
-      console.log(e)
       response.status(500).json({
         message: "No se pudo actualizar  la mascota"
       })

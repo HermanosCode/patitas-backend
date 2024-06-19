@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Pet from 'App/Models/Pet';
+
 import User from 'App/Models/User';
 import jwt from 'jsonwebtoken';
 
@@ -79,5 +80,202 @@ export default class UserController {
       })
     }
   }
+
+  public async addFavoritePet({ request, response }: HttpContextContract) {
+    try {
+      const token = request.cookie('pat-sin-hog')
+      const { pet_id } = request.body()
+      let userId = ''
+
+
+      if (!token) {
+        return response.status(401).json({
+          message: ' Token invalido'
+        })
+      }
+      try {
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN)
+        userId = decoded.user_id
+
+      }
+      catch (e) {
+        return response.status(401).json({
+          message: 'Error al verificar el token:'
+        })
+      }
+      const user = await User.findBy("user_id", userId)
+
+      if (!user) {
+        response.status(401).json({
+          message: "No se encontro el usuario"
+        })
+      } else {
+
+        let favoritesPets = user.favorites_pets;
+
+        if (!favoritesPets.includes(pet_id)) {
+          favoritesPets.push(pet_id);
+
+          // Convertir la lista de mascotas favoritas a una cadena JSON
+          const favoritesPetsJSON = JSON.stringify(favoritesPets);
+
+          user.favorites_pets = [favoritesPetsJSON];
+
+          // Guardar los cambios en la base de datos
+          await user.save();
+
+          return response.status(200).json({
+            message: 'Mascota agregada a favoritos correctamente'
+          });
+        }
+      }
+
+    } catch (e) {
+      response.status(500).json({
+        message: "Error interno del servidor"
+      })
+    }
+  }
+
+  public async deleteFavoritePet({ request, response }: HttpContextContract) {
+    try {
+      const token = request.cookie('pat-sin-hog')
+      const { pet_id } = request.body()
+      let userId = ''
+
+      if (!token) {
+        return response.status(401).json({
+          message: ' Token invalido'
+        })
+      }
+      try {
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN)
+        userId = decoded.user_id
+
+      }
+      catch (e) {
+        return response.status(401).json({
+          message: 'Error al verificar el token:'
+        })
+      }
+
+      const user = await User.findBy("user_id", userId)
+
+      if (!user) {
+        response.status(401).json({
+          message: "No se encontro el usuario"
+        })
+      } else {
+
+        let favoritesPets = user.favorites_pets;
+
+        if (favoritesPets.includes(pet_id)) {
+
+          favoritesPets = favoritesPets.filter(pet => pet !== pet_id);
+
+          // Convertir la lista de mascotas favoritas a una cadena JSON
+          const favoritesPetsJSON = JSON.stringify(favoritesPets);
+
+          user.favorites_pets = [favoritesPetsJSON];
+
+          // Guardar los cambios en la base de datos
+          await user.save();
+
+          return response.status(200).json({
+            message: 'Mascota sacado de favoritos correctamente'
+          });
+        }
+      }
+
+    } catch (e) {
+      response.status(500).json({
+        message: "Error interno del servidor"
+      })
+    }
+  }
+
+  public async getFavoritesPets({ request, response }: HttpContextContract) {
+    try {
+      const token = request.cookie('pat-sin-hog')
+      let userId = ''
+
+      if (!token) {
+        return response.status(401).json({
+          message: ' Token invalido'
+        })
+      }
+      try {
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN)
+        userId = decoded.user_id
+
+      }
+      catch (e) {
+        return response.status(401).json({
+          message: 'Error al verificar el token:'
+        })
+      }
+
+      const user = await User.findBy("user_id", userId)
+
+      if (!user) {
+        response.status(401).json({
+          message: "No se encontro el usuario"
+        })
+      } else {
+
+        const favoritesPets = await User.query().where("user_id", userId).from("users").select('favorites_pets');
+        const petsList = favoritesPets[0]?.favorites_pets
+        response.json({ favoritesPets: petsList });
+      }
+    } catch (e) {
+      response.status(500).json({
+        message: "Error interno del servidor"
+      })
+    }
+  }
+
+  public async getFavoritesDataPets({ request, response }: HttpContextContract) {
+    try {
+      const token = request.cookie('pat-sin-hog')
+      let userId = ''
+
+      if (!token) {
+        return response.status(401).json({
+          message: ' Token invalido'
+        })
+      }
+      try {
+        const decoded = await jwt.verify(token, process.env.JWT_TOKEN)
+        userId = decoded.user_id
+
+      }
+      catch (e) {
+        return response.status(401).json({
+          message: 'Error al verificar el token:'
+        })
+      }
+
+      const user = await User.findBy("user_id", userId)
+
+      if (!user) {
+        response.status(401).json({
+          message: "No se encontro el usuario"
+        })
+      } else {
+
+        const favoritesPets = await User.query().where("user_id", userId).from("users").select('favorites_pets');
+        const petsList = favoritesPets[0]?.favorites_pets
+       
+        const dataFavoritesPets = await Pet.query().whereIn('pet_id', petsList)
+
+        response.json({ favoritesPetsData: dataFavoritesPets });
+      }
+    } catch (e) {
+      response.status(500).json({
+        message: "Error interno del servidor"
+      })
+    }
+  }
+
 
 }

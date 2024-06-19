@@ -40,6 +40,15 @@ Route.group(() => {
   //Ruta para eliminar un usuario
   Route.delete('/delete/:user_id', 'UserController.deleteUser')
 
+  //Ruta para agregar mascota favorita
+  Route.put('/addFavorite','UserController.addFavoritePet')
+
+  Route.put("/deleteFavorite","UserController.deleteFavoritePet")
+
+  Route.get("/getFavoritesPets","UserController.getFavoritesPets")
+
+  Route.get("/getFavoritesDataPets","UserController.getFavoritesDataPets")
+
 
 }).prefix('/user')
 
