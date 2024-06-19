@@ -4,7 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import jwt from "jsonwebtoken"
 import { cantidadMascotasAMostrar } from '../../../common/constants';
 import User from 'App/Models/User';
-import Database from '@ioc:Adonis/Lucid/Database';
+
 
 
 cloudinary.config({
@@ -51,7 +51,8 @@ export default class PetController {
         }
 
         const uploadedPhoto = await cloudinary.uploader.upload(petPhoto.tmpPath!, {
-          upload_preset: 'patSinHog'
+          upload_preset: 'patSinHog',
+          folder: 'Imagenes_mascotas'
 
         });
 
@@ -278,7 +279,8 @@ export default class PetController {
           });
 
           const uploadedPhoto = await cloudinary.uploader.upload(filePet.tmpPath!, {
-            upload_preset: 'patSinHog'
+            upload_preset: 'patSinHog',
+            folder: 'Imagenes_mascotas'
 
           });
 
@@ -321,7 +323,7 @@ export default class PetController {
 
       for (const user of userWithPets) {
         const favoritesPetsUser = user.favorites_pets.filter(pet_id => pet_id !== data.pet_id);
-       
+
         await User.query()
           .where('user_id', user.user_id)
           .update({ favorites_pets: JSON.stringify(favoritesPetsUser) });

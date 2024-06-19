@@ -49,6 +49,10 @@ Route.group(() => {
 
   Route.get("/getFavoritesDataPets","UserController.getFavoritesDataPets")
 
+  Route.get("/getUserData","UserController.getUserData")
+
+  Route.post("/updateUserData","UserController.updateUserData")
+
 
 }).prefix('/user')
 
@@ -77,4 +81,19 @@ Route.group(() => {
 }).prefix('/pet')
 
 
+//Grupo de rutas para mascotas perdidas
 
+
+Route.group(()=> {
+
+  Route.get("/getLostPets","LostPetController.getLostPets")
+
+  Route.get("/getUserLostPets","LostPetController.getUserLostPets")
+
+  Route.delete("/deleteLostPet","LostPetController.deleteLostPet")
+
+  Route.put("/updateLostPet","LostPetController.updateLostPet")
+
+  Route.post("/publishLostPet","LostPetController.createLostPet")
+
+}).prefix("/lostPets")
