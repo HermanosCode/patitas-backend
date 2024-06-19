@@ -15,45 +15,57 @@ export default class LostPetController {
 
   public async createLostPet({ request, response }: HttpContextContract) {
     try {
-
-      const token = request.cookie("pat-sin-hog")
-      let user_id = ""
+      const token = request.cookie("pat-sin-hog");
+      let user_id = "";
 
       if (!token) {
         return response.status(401).json({ message: 'Token JWT inválido' });
       }
+
       try {
         const decoded = await jwt.verify(token, process.env.JWT_TOKEN);
         user_id = decoded.user_id;
-
       } catch (error) {
         return response.status(403).json({ message: 'Error al verificar el token:' });
       }
+
       // Obtener los datos de la solicitud
-      const petData = request.body()
-      const petPhoto = request.file("pet_photo")
+      const petData = request.body();
+      const petPhoto = request.file("pet_photo");
 
       if (!petPhoto) {
         return response.status(400).json({
           message: 'No se proporcionó ninguna imagen',
         });
       }
+
+     
+      if (!petData) {
+        return response.status(400).json({
+          message: 'No se proporcionaron los datos de la mascota',
+        });
+      }
+
+      
       const uploadedPhoto = await cloudinary.uploader.upload(petPhoto.tmpPath!, {
         upload_preset: 'patSinHog',
         folder: 'Imagenes_lostPets'
       });
       const imageUrl = uploadedPhoto.secure_url;
 
+      
       await LostPet.create({
         ...petData,
         user_id: user_id,
         pet_photo: imageUrl,
       });
-      return response.status(200).json({ message: 'La mascota perdida  fue publicada' });
+
+      return response.status(200).json({ message: 'La mascota perdida fue publicada' });
     } catch (e) {
-      return response.status(500).json({ message: 'Hubo un error al publicar  la mascota' });
+      return response.status(500).json({ message: 'Hubo un error al publicar la mascota' });
     }
   }
+
 
   public async getLostPets({ request, response }: HttpContextContract) {
 
