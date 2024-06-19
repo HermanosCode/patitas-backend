@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Pet from 'App/Models/Pet';
 import User from 'App/Models/User';
 import jwt from 'jsonwebtoken';
 
@@ -78,4 +79,5 @@ export default class UserController {
       })
     }
   }
+
 }

@@ -1,0 +1,1 @@
+export const cantidadMascotasAMostrar: number = 10;
